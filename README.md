@@ -7,8 +7,34 @@ The goal is to predict the category of scientific papers (nodes) in a citation n
 1.  **Node Features**: Sparse bag-of-words representation of papers.
 2.  **Graph Structure**: Citation links between papers.
 
+## Mathematical Background
+The Graph Convolutional Network (GCN) introduced by Kipf & Welling (2017) utilizes a first-order approximation of spectral graph convolutions.
+
+### 1. Graph Representation
+A graph is represented as $G = (V, E)$, where:
+*   $A \in \{0, 1\}^{N \times N}$ is the **Adjacency Matrix**.
+*   $D$ is the **Degree Matrix**, where $D_{ii} = \sum_j A_{ij}$.
+*   $X \in \mathbb{R}^{N \times F}$ is the **Feature Matrix** containing $F$-dimensional features for $N$ nodes.
+
+### 2. GCN Propagation Rule
+To include information from the node itself, we add self-loops to the adjacency matrix:
+$$\tilde{A} = A + I_N$$
+where $I_N$ is the identity matrix. The corresponding degree matrix is $\tilde{D}_{ii} = \sum_j \tilde{A}_{ij}$.
+
+The layer-wise propagation rule is defined as:
+$$H^{(l+1)} = \sigma \left( \tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2} H^{(l)} W^{(l)} \right)$$
+*   $H^{(l)}$ is the activation matrix at layer $l$ ($H^{(0)} = X$).
+*   $W^{(l)}$ is a trainable weight matrix.
+*   $\sigma(\cdot)$ is an activation function (e.g., ReLU).
+*   $\tilde{D}^{-1/2} \tilde{A} \tilde{D}^{-1/2}$ is the **Symmetric Normalized Adjacency Matrix**, which prevents numerical instability and exploding/vanishing gradients.
+
+### 3. Node-level Message Passing
+The matrix operation can be viewed as an aggregation of neighbor features:
+$$h_i^{(l+1)} = \sigma \left( \sum_{j \in \mathcal{N}(i) \cup \{i\}} \frac{1}{\sqrt{\tilde{d}_i \tilde{d}_j}} h_j^{(l)} W^{(l)} \right)$$
+where $\mathcal{N}(i)$ is the set of neighbors of node $i$.
+
 ## Training Process & Results
-The model was trained for **200 epochs** using the Adam optimizer. Below is the recorded training process showing the loss reduction and final accuracy.
+The model was trained for **200 epochs** using the Adam optimizer.
 
 ### Execution Log
 ```text
@@ -31,23 +57,14 @@ Accuracy: 0.8030
 
 ### Final Performance
 *   **Test Accuracy**: **80.30%**
-*   **Analysis**: The model converged rapidly around Epoch 60. The final accuracy of 80.3% aligns with the benchmarks of the original GCN paper (81.5%), proving the effectiveness of the Graph Convolutional operator on semi-supervised tasks.
+*   **Analysis**: The final accuracy of 80.3% aligns with the benchmarks of the original GCN paper (81.5%).
 
 ## Visualization (t-SNE)
-The node embeddings are projected into 2D space using t-SNE to observe how the model learns to cluster different classes.
-
 ### 1. Before Training (`embeddings_before.png`)
-Initially, node embeddings are randomly distributed because the weights are initialized randomly.
 ![Embeddings Before](embeddings_before.png)
 
 ### 2. After Training (`embeddings_after.png`)
-After 200 epochs, nodes belonging to the same category are physically clustered together, demonstrating that the GCN successfully captured both semantic features and structural connectivity.
 ![Embeddings After](embeddings_after.png)
-
-## Key Theoretical Concepts
-*   **Message Passing**: Aggregating information from 1-hop neighborhood nodes to update the target node representation.
-*   **Semi-supervised Learning**: Training the model using only a small fraction of labeled nodes (140 nodes for Cora).
-*   **Spectral Graph Convolution**: Utilizing the Graph Laplacian to perform convolutions in the spectral domain.
 
 ## Project Structure
 *   `model.py`: Definition of the 2-layer GCN architecture.
