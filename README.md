@@ -72,13 +72,17 @@ Accuracy: 0.8030
 *   `visualize.py`: Utility to project high-dimensional embeddings into 2D space using **t-SNE**.
 *   `requirements.txt`: List of dependencies.
 
-## Getting Started
-### Installation
-```bash
-pip install -r requirements.txt
+## References
+If you find this implementation useful for your research, please cite the original GCN paper:
+
+```text
+@inproceedings{kipf2017semi,
+  title={Semi-Supervised Classification with Graph Convolutional Networks},
+  author={Kipf, Thomas N. and Welling, Max},
+  booktitle={International Conference on Learning Representations (ICLR)},
+  year={2017}
+}
 ```
 
-### Running the Project
-```bash
-python train.py
-```
+*   Original Paper: [Semi-Supervised Classification with Graph Convolutional Networks](https://arxiv.org/abs/1609.02907)
+*   Dataset: [Planetoid (Cora)](https://github.com/kimiyoung/planetoid)
